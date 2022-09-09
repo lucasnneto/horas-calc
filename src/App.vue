@@ -14,7 +14,8 @@
       </tr>
       <tr>
         <td>TOTAL</td>
-        <td colspan="2">{{ total }}</td>
+        <td>{{ total }}</td>
+        <td>FALTA: {{ restante }}</td>
       </tr>
     </table>
   </div>
@@ -28,7 +29,18 @@ export default {
     list: [],
   }),
   created() {
-    this.add();
+    const item = JSON.parse(localStorage.getItem("item") || "[]");
+    if (!item.length) {
+      this.add();
+    } else {
+      this.list = item;
+    }
+  },
+  beforeUnmount() {
+    localStorage.setItem("item", JSON.stringify(this.list));
+  },
+  beforeUpdate() {
+    localStorage.setItem("item", JSON.stringify(this.list));
   },
   methods: {
     add() {
@@ -42,6 +54,17 @@ export default {
       const ind = this.list.findIndex((el) => el.id === item);
       if (ind != -1) this.list.splice(ind, 1);
     },
+    convertDate(value, hasNeg = false) {
+      let val = "";
+      if (hasNeg && value <= 0) {
+        val = "-";
+      }
+      const newValue = value.toString().replace("-", "");
+
+      val = val + (newValue.length == 1 ? "0" + newValue : newValue);
+
+      return val;
+    },
   },
   computed: {
     total() {
@@ -50,6 +73,15 @@ export default {
         return acc;
       }, moment.duration("00:00"));
       return moment.utc(dur.as("milliseconds")).format("HH:mm");
+    },
+    restante() {
+      const rest = moment
+        .duration("07:00")
+        .subtract(moment.duration(this.total));
+      return `${this.convertDate(
+        rest.hours(),
+        !!rest.minutes()
+      )}:${this.convertDate(rest.minutes())}`;
     },
   },
 };
