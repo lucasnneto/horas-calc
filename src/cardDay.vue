@@ -21,8 +21,14 @@
         <p v-else>{{ d.name }}</p>
         <div class="sub">
           <p class="time">{{ d.value }}</p>
-          <vue-feather type="edit-2"></vue-feather>
-          <vue-feather type="trash-2"></vue-feather>
+          <vue-feather
+            type="edit-2"
+            @click="$emit('editHour', indice, i)"
+          ></vue-feather>
+          <vue-feather
+            type="trash-2"
+            @click="$emit('deleteHour', indice, i)"
+          ></vue-feather>
         </div>
       </div>
     </div>

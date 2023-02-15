@@ -18,6 +18,7 @@
 
 <script>
 export default {
+  props: ["show"],
   data: () => ({
     showMenu: false,
     function: new Function(),
@@ -32,6 +33,20 @@ export default {
   },
   beforeUnmount() {
     window.removeEventListener("click", this.function);
+  },
+  watch: {
+    show: {
+      handler(val) {
+        this.showMenu = val;
+      },
+      immediate: true,
+    },
+    showMenu: {
+      handler(val) {
+        this.$emit("update:show", val);
+      },
+      immediate: true,
+    },
   },
   methods: {
     closeMenu() {
@@ -51,6 +66,7 @@ export default {
     box-sizing: border-box;
     position: absolute;
     width: 100%;
+    z-index: 5;
 
     &.show-modal {
       display: flex;
@@ -59,7 +75,7 @@ export default {
     background: #252831;
     border-radius: 20px;
     box-shadow: 0px 7.60456px 19.0114px rgba(0, 0, 0, 0.25);
-    padding: 30px;
+    padding: 15px;
   }
 }
 </style>

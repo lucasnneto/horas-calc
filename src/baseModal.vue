@@ -6,7 +6,7 @@
     @click.self="closeModal"
   >
     <div class="modal">
-      <div class="modal-card">
+      <div class="modal-card" v-if="modelValue">
         <slot />
       </div>
     </div>

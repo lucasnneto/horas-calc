@@ -1,61 +1,62 @@
 <template>
   <div class="time-picker">
-    <div @click="showMenu = !showMenu" class="time-pick-textfield">
-      <p v-if="label">{{ label }}</p>
-      <div class="time-pick-input" :class="{ selected: showMenu }">
-        <span>
-          {{ horaFinal.hora }}
-          <span v-if="horaFinal.hora && horaFinal.min" class="dot">:</span>
-          {{ horaFinal.min }}
-        </span>
-        <vue-feather stroke="#5093fe" size="30" type="clock"></vue-feather>
-      </div>
-    </div>
-    <div
-      class="menu-timer"
-      :class="{ 'show-modal': showMenu }"
-      ref="timerPicker"
-      role="menu"
-      @focusout="showMenu = false"
-      tabindex="1"
-    >
-      <div class="time-scroll">
-        <div
-          v-for="hr in 24"
-          :key="hr"
-          @click="selectHr(hr - 1)"
-          class="time"
-          :class="{ select: hora === hr - 1 }"
-        >
-          {{ paddingNumber(hr - 1) }}
+    <b-menu class="time-picker" v-model:show="show">
+      <div class="time-pick-textfield">
+        <p v-if="label">{{ label }}</p>
+        <div class="time-pick-input" :class="{ selected: show }">
+          <span>
+            {{ horaFinal.hora }}
+            <span v-if="horaFinal.hora && horaFinal.min" class="dot">:</span>
+            {{ horaFinal.min }}
+          </span>
+          <vue-feather stroke="#5093fe" size="30" type="clock"></vue-feather>
         </div>
       </div>
-      <div class="divider"></div>
-      <div class="time-scroll left">
-        <div
-          v-for="hr in 60"
-          :key="hr"
-          @click="selectMin(hr - 1)"
-          class="time"
-          :class="{ select: min === hr - 1 }"
-        >
-          {{ paddingNumber(hr - 1) }}
+      <template v-slot:menu>
+        <div class="menu-timer" role="menu">
+          <div class="time-scroll">
+            <div
+              v-for="hr in 24"
+              :key="hr"
+              @click="selectHr(hr - 1)"
+              class="time"
+              :class="{ select: hora === hr - 1 }"
+            >
+              {{ paddingNumber(hr - 1) }}
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="time-scroll left">
+            <div
+              v-for="hr in 60"
+              :key="hr"
+              @click="selectMin(hr - 1)"
+              class="time"
+              :class="{ select: min === hr - 1 }"
+            >
+              {{ paddingNumber(hr - 1) }}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </template>
+    </b-menu>
   </div>
 </template>
 
 <script>
+import bMenu from "./b-menu.vue";
 export default {
   props: {
     label: String,
     modelValue: String,
   },
+  components: {
+    bMenu,
+  },
   data: () => ({
-    showMenu: false,
     hora: -1,
     min: -1,
+    show: false,
   }),
   created() {
     if (this.modelValue) {
@@ -63,13 +64,6 @@ export default {
       this.hora = Number(times[0]);
       this.min = Number(times[1]);
     }
-  },
-  watch: {
-    showMenu(val) {
-      if (val) {
-        this.$refs.timerPicker.focus();
-      }
-    },
   },
   computed: {
     horaFinal() {
@@ -134,20 +128,13 @@ export default {
     }
   }
   .menu-timer {
-    display: none;
-    z-index: 10;
-    &.show-modal {
-      display: flex;
-    }
+    display: flex;
     margin-top: 2px;
-    background: #252831;
     border-radius: 20px;
-    box-shadow: 0px 7.60456px 19.0114px rgba(0, 0, 0, 0.25);
     width: 100%;
     height: 150px;
-    position: absolute;
-    padding-top: 50px;
-    padding-bottom: 50px;
+    padding-top: 20px;
+    padding-bottom: 20px;
 
     .divider {
       height: 100%;

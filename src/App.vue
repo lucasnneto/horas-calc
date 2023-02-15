@@ -23,8 +23,13 @@
       <activityModal
         :day="list[day]"
         :ind="day"
-        @cancel="modal2 = false"
+        :dataToEdit="dataToEdit"
+        @cancel="
+          modal2 = false;
+          dataToEdit = {};
+        "
         @save="saveNewdata"
+        @edit="editData"
       />
     </base-modal>
     <base-modal v-model="modal3"
@@ -62,6 +67,8 @@
         :indice="index"
         @delete-day="deleteDay"
         @add-active="addActive"
+        @delete-hour="deleteHour"
+        @edit-hour="editHour"
       />
     </div>
   </div>
@@ -102,14 +109,36 @@ export default {
     list: [],
     multiple: false,
     dataUnica: "",
+    dataToEdit: {},
   }),
   methods: {
+    editData(ind, name, value, url, indexHr) {
+      this.dataToEdit = {};
+      this.list[ind].data.splice(indexHr, 1, {
+        name,
+        value,
+        url,
+      });
+      this.modal2 = false;
+    },
+    editHour(index, indexHr) {
+      this.dataToEdit = {
+        ...this.list[index].data[indexHr],
+        posDia: index,
+        posHr: indexHr,
+      };
+      this.day = index;
+      this.modal2 = true;
+    },
+    deleteHour(index, indexHr) {
+      this.list[index].data.splice(indexHr, 1);
+    },
     addActive(ind) {
+      this.dataToEdit = {};
       this.day = ind;
       this.modal2 = true;
     },
     saveNewdata(ind, name, value, url) {
-      console.log(ind, this.list[ind]);
       this.list[ind].data.push({
         name,
         value,
