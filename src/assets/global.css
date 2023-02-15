@@ -1,0 +1,14 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+#app {
+  font-family: "Poppins", sans-serif;
+  background: #121212;
+  color: #fff;
+  height: 100vh;
+}
+p {
+  margin: 0;
+}

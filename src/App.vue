@@ -1,56 +1,90 @@
 <template>
-  <div>
-    <button @click="addTable" style="margin-bottom: 10px">add Dia</button>
-    <div v-for="(table, ind) in list" :key="table.id">
-      <hr style="margin-bottom: 20px; margin-top: 20px" />
-      <button @click="deleteDia(ind)">delete Dia</button>
-      <p>
-        Dia - <input type="number" v-model="table.day" style="width: 50px" />
-      </p>
-      <p>
-        Duração -
-        <select v-model="table.duration">
-          <option value="06:00" selected>06:00</option>
-          <option value="07:00">07:00</option>
-        </select>
-      </p>
+  <div class="main" style="height: 90%">
+    <base-modal v-model="modal">
+      <dateSelect v-if="multiple" multiple v-model="datas" />
+      <dateSelect v-else v-model="dataUnica" />
+      <div class="header-modal">
+        <div
+          class="button"
+          @click="
+            dataUnica = '';
+            datas = [];
+            modal = false;
+          "
+        >
+          <p>Cancelar</p>
+        </div>
+        <div class="button" @click="salveData">
+          <p>Salvar</p>
+        </div>
+      </div>
+    </base-modal>
+    <base-modal v-model="modal2">
+      <activityModal
+        :day="list[day]"
+        :ind="day"
+        @cancel="modal2 = false"
+        @save="saveNewdata"
+      />
+    </base-modal>
+    <base-modal v-model="modal3"
+      ><savesURLs @closeModal="modal3 = false"></savesURLs>
+    </base-modal>
+    <div class="header">
+      <div class="dias">
+        <div class="button" @click="newWeek">
+          <p>Nova semana</p>
+          <vue-feather type="plus-circle"></vue-feather>
+        </div>
+        <div class="button" @click="addDay">
+          <p>Novo dia</p>
+          <vue-feather type="plus-circle"></vue-feather>
+        </div>
+      </div>
+      <div class="button" @click="editUrl">
+        <p>Gerência Urls</p>
+        <vue-feather type="plus-circle"></vue-feather>
+      </div>
+    </div>
 
-      <button @click="add(ind)">add hora</button>
-      <table>
-        <tr>
-          <th>Texto</th>
-          <th>Duração</th>
-          <th>Ação</th>
-        </tr>
-        <tr v-for="item in table.data" :key="item.id">
-          <td><input type="text" v-model="item.name" /></td>
-          <td><input type="time" v-model="item.value" /></td>
-          <td><button @click="deleteItem(ind, item.id)">delete</button></td>
-        </tr>
-        <tr>
-          <td>TOTAL</td>
-          <td>{{ total(ind) }}</td>
-          <td>FALTA: {{ restante(ind) }}</td>
-        </tr>
-      </table>
+    <div
+      style="
+        overflow: auto;
+        max-height: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      "
+    >
+      <card-day
+        v-for="(day, index) in list"
+        :key="index"
+        :day="day"
+        :indice="index"
+        @delete-day="deleteDay"
+        @add-active="addActive"
+      />
     </div>
   </div>
 </template>
 
 <script>
 import moment from "moment";
+import cardDay from "./cardDay";
+import baseModal from "./baseModal";
+import dateSelect from "./dateSelect.vue";
+import activityModal from "./ActivityModal.vue";
+import savesURLs from "./savesURLs.vue";
 export default {
   name: "App",
-  data: () => ({
-    list: [],
-  }),
+  components: {
+    cardDay,
+    baseModal,
+    dateSelect,
+    activityModal,
+    savesURLs,
+  },
   created() {
     const item = JSON.parse(localStorage.getItem("item") || "[]");
-    // if (!item.length) {
-    //   this.add();
-    // } else {
-    //   this.list = item;
-    //   }
     this.list = [...item];
   },
   beforeUnmount() {
@@ -59,76 +93,115 @@ export default {
   beforeUpdate() {
     localStorage.setItem("item", JSON.stringify(this.list));
   },
+  data: () => ({
+    modal: false,
+    modal2: false,
+    modal3: false,
+    day: 0,
+    datas: [],
+    list: [],
+    multiple: false,
+    dataUnica: "",
+  }),
   methods: {
-    addTable() {
-      this.list.push({
-        id: (Math.random() + 1).toString(36).substring(7),
-        day: Number(moment().format("D")),
-        data: [],
-        duration: "06:00",
+    addActive(ind) {
+      this.day = ind;
+      this.modal2 = true;
+    },
+    saveNewdata(ind, name, value, url) {
+      console.log(ind, this.list[ind]);
+      this.list[ind].data.push({
+        name,
+        value,
+        url,
       });
+      this.modal2 = false;
     },
-    deleteDia(index) {
-      this.list.splice(index, 1);
+    newWeek() {
+      this.multiple = true;
+      this.modal = true;
     },
-    add(index) {
-      this.list[index].data.push({
-        id: (Math.random() + 1).toString(36).substring(7),
-        name: "",
-        value: "",
-      });
+    editUrl() {
+      this.modal3 = true;
     },
-    deleteItem(indexTb, item) {
-      console.log(this.list[indexTb]);
-      const ind = this.list[indexTb].data.findIndex((el) => el.id === item);
-      if (ind != -1) this.list[indexTb].data.splice(ind, 1);
-    },
-    convertDate(value, hasNeg = false) {
-      let val = "";
-      if (hasNeg && value <= 0) {
-        val = "-";
+    salveData() {
+      if (this.multiple) {
+        if (this.datas.length !== 2) return;
+        if (moment(this.datas[0]).isSameOrAfter(moment(this.datas[1]))) {
+          this.datas.reverse();
+        }
+        let lastDay = moment(this.datas[0]);
+        const listDays = [lastDay.format()];
+        while (lastDay.format("D") !== moment(this.datas[1]).format("D")) {
+          lastDay = lastDay.add(1, "days");
+          listDays.push(lastDay.format());
+        }
+        this.list = listDays.map((dt) => ({
+          day: dt,
+          data: [],
+          duration: "06:00",
+        }));
+      } else {
+        this.list.push({
+          day: moment(this.dataUnica).format(),
+          data: [],
+          duration: "06:00",
+        });
       }
-      const newValue = value.toString().replace("-", "");
-
-      val = val + (newValue.length == 1 ? "0" + newValue : newValue);
-
-      return val;
+      this.modal = false;
     },
-    total(ind) {
-      const dur = this.list[ind].data.reduce((acc, item) => {
-        if (item.value) return acc.add(moment.duration(item.value));
-        return acc;
-      }, moment.duration("00:00"));
-      return moment.utc(dur.as("milliseconds")).format("HH:mm");
+    addDay() {
+      this.multiple = false;
+      this.modal = true;
     },
-    restante(ind) {
-      const rest = moment
-        .duration(this.list[ind].duration)
-        .subtract(moment.duration(this.total(ind)));
-      return `${this.convertDate(
-        rest.hours(),
-        !!rest.minutes()
-      )}:${this.convertDate(rest.minutes())}`;
+    deleteDay(index) {
+      this.list.splice(index, 1);
     },
   },
 };
 </script>
 
-<style>
-table {
-  font-family: arial, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
+<style lang="scss">
+.main {
+  padding: 16px;
+  position: relative;
+  > .header {
+    background: #5093fe;
+    margin-left: -16px;
+    margin-right: -16px;
+    margin-top: -16px;
+    margin-bottom: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    .dias {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+    .button {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 20px;
+    }
+    .button i {
+      margin-left: 10px;
+    }
+  }
 }
-
-td,
-th {
-  border: 1px solid #dddddd;
-  text-align: left;
-  padding: 8px;
-}
-
-tr:nth-child(even) {
-  background-color: #dddddd;
+.header-modal {
+  display: flex;
+  div {
+    margin-right: 10px;
+    cursor: pointer;
+    &:first-child {
+      color: red;
+    }
+  }
 }
 </style>
