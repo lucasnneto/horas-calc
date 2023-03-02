@@ -1,5 +1,5 @@
 <template>
-  <div class="main" style="height: 90%">
+  <div class="main">
     <base-modal v-model="modal">
       <dateSelect v-if="multiple" multiple v-model="datas" />
       <dateSelect v-else v-model="dataUnica" />
@@ -192,6 +192,11 @@ export default {
 
 <style lang="scss">
 .main {
+  max-height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   padding: 16px;
   position: relative;
   > .header {

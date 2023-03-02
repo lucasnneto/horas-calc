@@ -1,6 +1,6 @@
 <template>
   <div class="time-picker">
-    <b-menu class="time-picker" v-model:show="show">
+    <b-menu class="time-picker" v-model:show="show" :closeOnClick="false">
       <div class="time-pick-textfield">
         <p v-if="label">{{ label }}</p>
         <div class="time-pick-input" :class="{ selected: show }">
@@ -14,25 +14,31 @@
       </div>
       <template v-slot:menu>
         <div class="menu-timer" role="menu">
-          <div class="time-scroll">
+          <div class="time-scroll" ref="hora">
             <div
               v-for="hr in 24"
               :key="hr"
               @click="selectHr(hr - 1)"
               class="time"
-              :class="{ select: hora === hr - 1 }"
+              :class="[
+                { select: hora === hr - 1 },
+                'hr-' + paddingNumber(hr - 1),
+              ]"
             >
               {{ paddingNumber(hr - 1) }}
             </div>
           </div>
           <div class="divider"></div>
-          <div class="time-scroll left">
+          <div ref="min" class="time-scroll left">
             <div
               v-for="hr in 60"
               :key="hr"
               @click="selectMin(hr - 1)"
               class="time"
-              :class="{ select: min === hr - 1 }"
+              :class="[
+                { select: min === hr - 1 },
+                'min-' + paddingNumber(hr - 1),
+              ]"
             >
               {{ paddingNumber(hr - 1) }}
             </div>
@@ -45,6 +51,7 @@
 
 <script>
 import bMenu from "./b-menu.vue";
+
 export default {
   props: {
     label: String,
@@ -57,34 +64,67 @@ export default {
     hora: -1,
     min: -1,
     show: false,
+    initial: true,
   }),
-  created() {
+  mounted() {
     if (this.modelValue) {
       const times = this.modelValue.split(":");
       this.hora = Number(times[0]);
+
       this.min = Number(times[1]);
     }
+  },
+  watch: {
+    show(val) {
+      if (val && this.modelValue) {
+        setTimeout(() => {
+          const times = this.modelValue.split(":");
+
+          const hrComp = document.querySelector(".hr-" + times[0]);
+          const y = hrComp.offsetTop - hrComp.clientHeight * 1.5;
+          this.$refs.hora.scrollTop = y;
+          // hrComp.scrollIntoView({ block: "center" });
+
+          const minComp = document.querySelector(".min-" + times[1]);
+          // minComp.scrollIntoView({ block: "center" });
+          const y2 = minComp.offsetTop - minComp.clientHeight * 1.5;
+          this.$refs.min.scrollTop = y2;
+        }, 20);
+      }
+    },
   },
   computed: {
     horaFinal() {
       if (this.hora === -1 && this.min === -1) return { hora: "", min: "" };
       const parseHr =
-        this.hora !== -1 ? this.hora.toString().padStart(2, "0") : "00";
+        this.hora !== -1 ? this.hora.toString().padStart(2, "0") : "--";
       const parseMin =
-        this.min !== -1 ? this.min.toString().padStart(2, "0") : "00";
+        this.min !== -1 ? this.min.toString().padStart(2, "0") : "--";
       this.$emit("update:modelValue", parseHr + ":" + parseMin);
       return { hora: parseHr, min: parseMin };
     },
   },
   methods: {
+    centerMin(value) {
+      const minComp = document.querySelector(".min-" + value);
+      const y2 = minComp.offsetTop - minComp.clientHeight * 1.5;
+      this.$refs.min.scrollTo({ top: y2, behavior: "smooth" });
+    },
+    centerHr(value) {
+      const hrComp = document.querySelector(".hr-" + value);
+      const y = hrComp.offsetTop - hrComp.clientHeight * 1.5;
+      this.$refs.hora.scrollTo({ top: y, behavior: "smooth" });
+    },
     paddingNumber(hr) {
       return hr.toString().padStart(2, "0");
     },
     selectHr(hr) {
       this.hora = hr;
+      this.centerHr(this.paddingNumber(hr));
     },
-    selectMin(hr) {
-      this.min = hr;
+    selectMin(min) {
+      this.min = min;
+      this.centerMin(this.paddingNumber(min));
     },
   },
 };

@@ -1,5 +1,12 @@
 <template>
-  <div class="b-menu" ref="menuBase">
+  <div
+    class="b-menu"
+    ref="menuBase"
+    v-click-outside="{
+      handler: closeMenu,
+      include: () => [...allChildren()],
+    }"
+  >
     <div class="component" ref="comp" @click="showMenu = !showMenu">
       <slot></slot>
     </div>
@@ -8,8 +15,11 @@
       class="menu"
       :class="{ 'show-modal': showMenu }"
       ref="timerPicker"
-      @focusout="showMenu = false"
-      tabindex="1"
+      @click="
+        () => {
+          closeOnClick && closeMenu();
+        }
+      "
     >
       <slot name="menu"></slot>
     </div>
@@ -18,22 +28,34 @@
 
 <script>
 export default {
-  props: ["show"],
+  props: {
+    show: Boolean,
+    closeOnClick: {
+      default: true,
+      type: Boolean,
+    },
+  },
   data: () => ({
     showMenu: false,
     function: new Function(),
   }),
-  beforeMount() {
-    this.function = (e) => {
-      if (!this.$refs.menuBase.contains(e.target)) {
-        this.closeMenu();
-      }
-    };
-    window.addEventListener("click", this.function);
-  },
-  beforeUnmount() {
-    window.removeEventListener("click", this.function);
-  },
+  // beforeMount() {
+  //   this.function = (e) => {
+  //     console.log(this.searchChildren(this.$el.children), e.target);
+  //     if (
+  //       !this.searchChildren(this.$el.children).some((el) =>
+  //         el.contains(e.target)
+  //       )
+  //     ) {
+  //       console.log("aqui");
+  //       this.closeMenu();
+  //     }
+  //   };
+  //   window.addEventListener("click", this.function);
+  // },
+  // beforeUnmount() {
+  //   window.removeEventListener("click", this.function);
+  // },
   watch: {
     show: {
       handler(val) {
@@ -49,6 +71,22 @@ export default {
     },
   },
   methods: {
+    allChildren() {
+      if (!this.$el) return [];
+      return this.searchChildren(this.$el.children);
+    },
+    searchChildren(children) {
+      const results = [];
+      for (let index = 0; index < children.length; index++) {
+        const child = children[index];
+        results.push(child);
+        if (child.children.length) {
+          results.push(...this.searchChildren(child.children));
+        }
+      }
+
+      return results;
+    },
     closeMenu() {
       this.showMenu = false;
     },
