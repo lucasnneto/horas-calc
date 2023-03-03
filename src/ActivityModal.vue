@@ -4,7 +4,12 @@
       {{ formatedDay }}
     </p>
     <text-field v-model="name" label="Nome" class="input"></text-field>
-    <time-picker v-model="duration" label="Duração" class="input"></time-picker>
+    <time-picker
+      v-model="duration"
+      label="Duração"
+      class="input"
+      :step="5"
+    ></time-picker>
     <b-menu class="input">
       <text-field v-model="url" label="Url"></text-field>
       <template v-slot:menu>

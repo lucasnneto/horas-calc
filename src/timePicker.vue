@@ -10,6 +10,13 @@
             {{ horaFinal.min }}
           </span>
           <vue-feather stroke="#5093fe" size="30" type="clock"></vue-feather>
+          <input
+            :value="horaFinal.hora + ':' + horaFinal.min"
+            type="text"
+            class="input"
+            @focus="show = true"
+            @blur="show = false"
+          />
         </div>
       </div>
       <template v-slot:menu>
@@ -31,7 +38,7 @@
           <div class="divider"></div>
           <div ref="min" class="time-scroll left">
             <div
-              v-for="hr in 60"
+              v-for="hr in minInStep"
               :key="hr"
               @click="selectMin(hr - 1)"
               class="time"
@@ -56,6 +63,10 @@ export default {
   props: {
     label: String,
     modelValue: String,
+    step: {
+      default: 1,
+      type: Number,
+    },
   },
   components: {
     bMenu,
@@ -94,6 +105,14 @@ export default {
     },
   },
   computed: {
+    minInStep() {
+      const arrayRange = (start, stop, step) =>
+        Array.from(
+          { length: (stop - start) / step + 1 },
+          (value, index) => start + index * step
+        );
+      return arrayRange(1, 60, this.step);
+    },
     horaFinal() {
       if (this.hora === -1 && this.min === -1) return { hora: "", min: "" };
       const parseHr =
@@ -134,6 +153,15 @@ export default {
 .time-picker {
   position: relative;
   height: 100%;
+  .input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
   .time-pick-textfield {
     p {
       margin-bottom: 5px;
@@ -141,6 +169,7 @@ export default {
       font-size: 20px;
     }
     .time-pick-input {
+      position: relative;
       border: none;
       background: #252831;
       border-radius: 8px;
@@ -182,6 +211,9 @@ export default {
     }
     .time-scroll {
       color: #6c6c6c;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
       cursor: pointer;
       font-weight: 500;
       font-size: 35px;
