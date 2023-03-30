@@ -76,6 +76,7 @@ export default {
     min: -1,
     show: false,
     initial: true,
+    isSelect: { h: false, m: false },
   }),
   mounted() {
     if (this.modelValue) {
@@ -86,7 +87,17 @@ export default {
     }
   },
   watch: {
+    isSelect: {
+      handler(val) {
+        if (val.h && val.m) this.show = false;
+      },
+      deep: true,
+    },
     show(val) {
+      if (val) {
+        this.isSelect.h = false;
+        this.isSelect.m = false;
+      }
       if (val && this.modelValue) {
         setTimeout(() => {
           const times = this.modelValue.split(":");
@@ -120,6 +131,7 @@ export default {
       const parseMin =
         this.min !== -1 ? this.min.toString().padStart(2, "0") : "--";
       this.$emit("update:modelValue", parseHr + ":" + parseMin);
+
       return { hora: parseHr, min: parseMin };
     },
   },
@@ -140,10 +152,12 @@ export default {
     selectHr(hr) {
       this.hora = hr;
       this.centerHr(this.paddingNumber(hr));
+      this.isSelect.h = true;
     },
     selectMin(min) {
       this.min = min;
       this.centerMin(this.paddingNumber(min));
+      this.isSelect.m = true;
     },
   },
 };

@@ -1,5 +1,5 @@
 <template>
-  <div class="main">
+  <div>
     <base-modal v-model="modal">
       <dateSelect v-if="multiple" multiple v-model="datas" />
       <dateSelect v-else v-model="dataUnica" />
@@ -35,41 +35,43 @@
     <base-modal v-model="modal3"
       ><savesURLs @closeModal="modal3 = false"></savesURLs>
     </base-modal>
-    <div class="header">
-      <div class="dias">
-        <div class="button" @click="newWeek">
-          <p>Nova semana</p>
-          <vue-feather type="plus-circle"></vue-feather>
+    <div class="main">
+      <div class="header">
+        <div class="dias">
+          <div class="button" @click="newWeek">
+            <p>Nova semana</p>
+            <vue-feather type="plus-circle"></vue-feather>
+          </div>
+          <div class="button" @click="addDay">
+            <p>Novo dia</p>
+            <vue-feather type="plus-circle"></vue-feather>
+          </div>
         </div>
-        <div class="button" @click="addDay">
-          <p>Novo dia</p>
+        <div class="button" @click="editUrl">
+          <p>Gerência Urls</p>
           <vue-feather type="plus-circle"></vue-feather>
         </div>
       </div>
-      <div class="button" @click="editUrl">
-        <p>Gerência Urls</p>
-        <vue-feather type="plus-circle"></vue-feather>
-      </div>
-    </div>
 
-    <div
-      style="
-        overflow: auto;
-        max-height: 100%;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-      "
-    >
-      <card-day
-        v-for="(day, index) in list"
-        :key="index"
-        :day="day"
-        :indice="index"
-        @delete-day="deleteDay"
-        @add-active="addActive"
-        @delete-hour="deleteHour"
-        @edit-hour="editHour"
-      />
+      <div
+        style="
+          overflow: auto;
+          max-height: 100%;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        "
+      >
+        <card-day
+          v-for="(day, index) in list"
+          :key="index"
+          :day="day"
+          :indice="index"
+          @delete-day="deleteDay"
+          @add-active="addActive"
+          @delete-hour="deleteHour"
+          @edit-hour="editHour"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -168,13 +170,13 @@ export default {
         this.list = listDays.map((dt) => ({
           day: dt,
           data: [],
-          duration: "06:00",
+          duration: "07:00",
         }));
       } else {
         this.list.push({
           day: moment(this.dataUnica).format(),
           data: [],
-          duration: "06:00",
+          duration: "07:00",
         });
       }
       this.modal = false;

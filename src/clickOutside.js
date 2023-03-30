@@ -71,7 +71,7 @@ function directive(e, el, binding) {
   el._clickOutside.lastMousedownWasOutside &&
     checkEvent(e, el, binding) &&
     setTimeout(() => {
-      checkIsActive(e, binding) && handler && handler(e);
+      checkIsActive(e, binding) && handler && handler(el);
     }, 0);
 }
 

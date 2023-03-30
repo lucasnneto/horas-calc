@@ -7,17 +7,18 @@
       include: () => [...allChildren()],
     }"
   >
-    <div class="component" ref="comp" @click="showMenu = !showMenu">
+    <div class="component" ref="activator" @click="showMenu = !showMenu">
       <slot></slot>
     </div>
 
     <div
       class="menu"
       :class="{ 'show-modal': showMenu }"
-      ref="timerPicker"
+      :style="{ top: top + 'px', left: left + 'px' }"
+      ref="menuside"
       @click="
         () => {
-          closeOnClick && closeMenu();
+          closeOnClick && closeMenu('teste');
         }
       "
     >
@@ -30,14 +31,33 @@
 export default {
   props: {
     show: Boolean,
+    direction: {
+      type: String,
+      default: "bottom",
+      validator(value) {
+        return ["bottom", "right"].includes(value);
+      },
+    },
     closeOnClick: {
       default: true,
       type: Boolean,
     },
   },
+  mounted() {
+    window.addEventListener(
+      "resize",
+      () => {
+        this.calcTop();
+        this.calcLeft();
+      },
+      true
+    );
+  },
   data: () => ({
     showMenu: false,
     function: new Function(),
+    top: 0,
+    left: 0,
   }),
   // beforeMount() {
   //   this.function = (e) => {
@@ -66,11 +86,58 @@ export default {
     showMenu: {
       handler(val) {
         this.$emit("update:show", val);
+        if (val) {
+          this.calcTop();
+          this.calcLeft();
+        }
       },
       immediate: true,
     },
   },
   methods: {
+    calcLeft() {
+      this.$nextTick(() => {
+        const activatorWidth = this.$refs.activator.clientWidth;
+        const activatorTop = this.$refs.activator.getBoundingClientRect().left;
+        const sizeEl = this.$refs.menuside.clientWidth;
+        const screenSize = document.querySelector("body").clientWidth;
+        const calc = activatorTop + activatorWidth + sizeEl + screenSize * 0.02;
+        this.left = 0;
+        if (this.direction === "right") {
+          this.left = activatorWidth;
+          if (calc > screenSize) {
+            this.left = this.left + screenSize - calc;
+          }
+        } else {
+          const newCalc = calc - activatorWidth;
+          if (newCalc > screenSize) {
+            this.left = screenSize - newCalc;
+          }
+        }
+      });
+    },
+    calcTop() {
+      this.$nextTick(() => {
+        const activatorHeight = this.$refs.activator.clientHeight;
+        const activatorTop = this.$refs.activator.getBoundingClientRect().top;
+        const sizeEl = this.$refs.menuside.clientHeight;
+        const screenSize = document.querySelector("body").clientHeight;
+        const calc =
+          activatorTop + activatorHeight + sizeEl + screenSize * 0.02;
+        this.top = 0;
+        if (this.direction === "bottom") {
+          this.top = activatorHeight;
+          if (calc > screenSize) {
+            this.top = this.top + screenSize - calc;
+          }
+        } else {
+          const newCalc = calc - activatorHeight;
+          if (newCalc > screenSize) {
+            this.top = screenSize - newCalc;
+          }
+        }
+      });
+    },
     allChildren() {
       if (!this.$el) return [];
       return this.searchChildren(this.$el.children);
