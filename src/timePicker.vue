@@ -103,14 +103,18 @@ export default {
           const times = this.modelValue.split(":");
 
           const hrComp = document.querySelector(".hr-" + times[0]);
-          const y = hrComp.offsetTop - hrComp.clientHeight * 1.5;
-          this.$refs.hora.scrollTop = y;
-          // hrComp.scrollIntoView({ block: "center" });
+          if (hrComp) {
+            const y = hrComp.offsetTop - hrComp.clientHeight * 1.5;
+            this.$refs.hora.scrollTop = y;
+            // hrComp.scrollIntoView({ block: "center" });
+          }
 
           const minComp = document.querySelector(".min-" + times[1]);
-          // minComp.scrollIntoView({ block: "center" });
-          const y2 = minComp.offsetTop - minComp.clientHeight * 1.5;
-          this.$refs.min.scrollTop = y2;
+          if (minComp) {
+            // minComp.scrollIntoView({ block: "center" });
+            const y2 = minComp.offsetTop - minComp.clientHeight * 1.5;
+            this.$refs.min.scrollTop = y2;
+          }
         }, 20);
       }
     },

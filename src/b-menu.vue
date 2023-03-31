@@ -47,8 +47,10 @@ export default {
     window.addEventListener(
       "resize",
       () => {
-        this.calcTop();
-        this.calcLeft();
+        if (this.showMenu) {
+          this.calcTop();
+          this.calcLeft();
+        }
       },
       true
     );
