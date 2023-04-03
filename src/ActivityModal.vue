@@ -10,7 +10,13 @@
       class="input"
       :step="5"
     ></time-picker>
-    <b-menu class="input">
+    <text-field
+      class="input"
+      v-model="url"
+      label="Url"
+      v-if="urls.length === 0"
+    ></text-field>
+    <b-menu class="input" v-else>
       <text-field v-model="url" label="Url"></text-field>
       <template v-slot:menu>
         <div class="list-url">
