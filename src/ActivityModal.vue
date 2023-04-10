@@ -1,8 +1,21 @@
 <template>
   <div class="modal">
-    <p class="title">
-      {{ formatedDay }}
-    </p>
+    <div class="header">
+      <p class="title">
+        {{ formatedDay }}
+      </p>
+      <p class="temp-rest">
+        Tempo restante <br />
+        <span
+          class="select-time"
+          :class="{ previa: previa !== restante }"
+          @click="selectTime"
+        >
+          {{ previa }}
+        </span>
+      </p>
+    </div>
+
     <text-field v-model="name" label="Nome" class="input"></text-field>
     <time-picker
       v-model="duration"
@@ -78,6 +91,9 @@ export default {
     this.urls = [...item];
   },
   methods: {
+    selectTime() {
+      this.duration = this.restante;
+    },
     clean() {
       this.name = "";
       this.duration = "";
@@ -98,6 +114,15 @@ export default {
       }
       this.clean();
     },
+    convertDate(value) {
+      let val = "";
+
+      const newValue = value.toString().replace("-", "");
+
+      val = val + (newValue.length == 1 ? "0" + newValue : newValue);
+
+      return val;
+    },
   },
   computed: {
     isEdit() {
@@ -107,12 +132,53 @@ export default {
       if (!this.day?.day) return "";
       return moment(this.day.day).format("ddd - DD/MM");
     },
+    total() {
+      const dur = this.day.data.reduce((acc, item) => {
+        if (item.value) return acc.add(moment.duration(item.value));
+        return acc;
+      }, moment.duration("00:00"));
+      return moment.utc(dur.as("milliseconds")).format("HH:mm");
+    },
+    restante() {
+      const rest = moment
+        .duration(this.day.duration)
+        .subtract(moment.duration(this.total));
+      return `${this.convertDate(
+        rest.hours(),
+        !!rest.minutes()
+      )}:${this.convertDate(rest.minutes())}`;
+    },
+    previa() {
+      if (!this.duration) {
+        return this.restante;
+      }
+      const rest = moment
+        .duration(this.restante)
+        .subtract(moment.duration(this.duration));
+      return `${
+        rest.hours() < 0 || rest.minutes() < 0 ? "-" : ""
+      }${this.convertDate(rest.hours())}:${this.convertDate(rest.minutes())}`;
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
 .modal {
+  .header {
+    display: flex;
+    justify-content: space-between;
+  }
+  .temp-rest {
+    font-size: 12px;
+    text-align: center;
+    .select-time {
+      cursor: pointer;
+    }
+    .previa {
+      color: rgb(255, 128, 82);
+    }
+  }
   .title {
     margin-bottom: 30px;
     font-weight: bold;

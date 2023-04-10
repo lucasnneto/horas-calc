@@ -87,6 +87,16 @@ export default {
     }
   },
   watch: {
+    modelValue() {
+      if (this.modelValue) {
+        const times = this.modelValue.split(":");
+        if (this.hora !== Number(times[0]) && this.min !== Number(times[1])) {
+          this.hora = Number(times[0]);
+
+          this.min = Number(times[1]);
+        }
+      }
+    },
     isSelect: {
       handler(val) {
         if (val.h && val.m) this.show = false;
@@ -240,7 +250,7 @@ export default {
       width: 50%;
       display: flex;
       flex-direction: column;
-      align-items: end;
+      align-items: flex-end;
       padding-right: 30px;
       &::-webkit-scrollbar {
         display: none;
